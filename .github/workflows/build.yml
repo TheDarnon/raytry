@@ -24,12 +24,9 @@ jobs:
 
       - name: Build Project
         run: |
-          # Перевіримо, чи взагалі є main.cpp
-          ls -l main.cpp
-          
           RAYLIB_PATH=$(pwd)/raylib/src
           
-          # Запускаємо компіляцію
+          # Я прибрала --preload-file, бо він валить збірку
           em++ main.cpp -o index.html \
           $RAYLIB_PATH/libraylib.web.a \
           -I. -I$RAYLIB_PATH \
@@ -37,13 +34,11 @@ jobs:
           -s USE_GLFW=3 \
           -s ASYNCIFY \
           -DPLATFORM_WEB \
-          --shell-file $RAYLIB_PATH/shell.html \
-          --preload-file assets || echo "No assets folder, but that is fine"
+          --shell-file $RAYLIB_PATH/shell.html
 
-          # КЛЮЧОВИЙ МОМЕНТ: де файли?
-          echo "ПОШУК ФАЙЛІВ:"
-          find . -name "index.*"
-
+          echo "ПОШУК ФАЙЛІВ ПІСЛЯ ЗБІРКИ:"
+          ls -F index.*
+          
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
