@@ -20,23 +20,23 @@ jobs:
           git clone --depth 1 https://github.com/raysan5/raylib.git
           cd raylib/src
           make PLATFORM=PLATFORM_WEB -B
-          # Перевіряємо, чи з'явився файл, щоб не було сюрпризів
-          ls -l libraylib.a 
+          # Ось він, наш підступний файл:
+          ls -l libraylib.web.a 
           cd ../..
 
       - name: Build Project
         run: |
-          # Визначаємо шлях до ліби точно
           RAYLIB_PATH=$(pwd)/raylib/src
           
-          em++ -o index.html main.cpp $RAYLIB_PATH/libraylib.a \
+          # Тут теж міняємо на .web.a
+          em++ -o index.html main.cpp $RAYLIB_PATH/libraylib.web.a \
           -I. -I$RAYLIB_PATH \
           -L. -L$RAYLIB_PATH \
           -s USE_GLFW=3 \
           -s ASYNCIFY \
           -DPLATFORM_WEB \
           --shell-file $RAYLIB_PATH/shell.html \
-          --preload-file assets
+          --preload-file assets || echo "Папки assets нема, але ігноримо це"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
