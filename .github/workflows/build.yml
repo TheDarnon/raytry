@@ -1,11 +1,17 @@
-name: Build Raylib for Web
+name: Build and Deploy Raylib to Pages
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main] # Деплоїмо тільки коли пушиш в main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,8 +31,6 @@ jobs:
       - name: Build Project
         run: |
           RAYLIB_PATH=$(pwd)/raylib/src
-          
-          # Я прибрала --preload-file, бо він валить збірку
           em++ main.cpp -o index.html \
           $RAYLIB_PATH/libraylib.web.a \
           -I. -I$RAYLIB_PATH \
@@ -36,11 +40,21 @@ jobs:
           -DPLATFORM_WEB \
           --shell-file $RAYLIB_PATH/shell.html
 
-          echo "ПОШУК ФАЙЛІВ ПІСЛЯ ЗБІРКИ:"
-          ls -F index.*
-          
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: web-build
-          path: index*
+          path: '.' # Завантажуємо корінь, де лежать index.html, .js та .wasm
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
