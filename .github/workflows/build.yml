@@ -27,8 +27,7 @@ jobs:
       - name: Build Project
         run: |
           RAYLIB_PATH=$(pwd)/raylib/src
-          
-          # Тут теж міняємо на .web.a
+          # Компілюємо і явно кажемо покласти все в корінь
           em++ -o index.html main.cpp $RAYLIB_PATH/libraylib.web.a \
           -I. -I$RAYLIB_PATH \
           -L. -L$RAYLIB_PATH \
@@ -36,13 +35,19 @@ jobs:
           -s ASYNCIFY \
           -DPLATFORM_WEB \
           --shell-file $RAYLIB_PATH/shell.html \
-          --preload-file assets || echo "Папки assets нема, але ігноримо це"
+          --preload-file assets || echo "Assets folder missing, skipping preload"
+          
+          # ПЕРЕВІРКА: покажи нам, що ти там наробив!
+          echo "Ось що в нас у папці зараз:"
+          ls -F
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-build
+          # Використовуємо маску, щоб забрати все, що нагенерував emcc
           path: |
             index.html
             index.js
             index.wasm
+            index.data
